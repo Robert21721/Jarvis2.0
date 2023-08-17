@@ -1,5 +1,11 @@
 import openai
 
+exit_commands = [
+    {"text": "end conversation", "action": "exit"},
+    {"text": "exit", "action": "exit"},
+    {"text": "It is enough for now", "action": "exit"},
+]
+
 class ChatGPT:
     def __init__(self, API_key, max_tokens = 500):
         openai.api_key = API_key
@@ -30,7 +36,11 @@ class ChatGPT:
         return assistant_reply
     
 
-    def conversation(self, message, max_history_len = 21):
+    def conversation(self, message, nlp, max_history_len = 21):
+        if nlp.exit_check(message, exit_commands):
+            self.clear_conversation_history()
+            return ""
+
         if len(self._conversation) > max_history_len:
             self._conversation = list(self._conversation[0]).append(self._conversation[3:])
 
@@ -54,11 +64,12 @@ class ChatGPT:
         print('Total message tokens: ' + str(total_tokens))
         print('Used tokens: ' + str(self.used_tokens))
 
-
         return assistant_reply
     
 
     def clear_conversation_history(self):
+        print(self._conversation)
+
         self._conversation = [{"role": "system", "content": "You are a helpful assistant"}]
         self.used_tokens = 0
 
